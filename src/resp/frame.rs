@@ -29,7 +29,7 @@ where
 }
 
 #[enum_dispatch(RespEncode)]
-#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone)]
 pub enum RespFrame {
     SimpleString(RespSimpleString),
     Error(RespSimpleError),
@@ -42,6 +42,9 @@ pub enum RespFrame {
     Map(RespMap),
     Set(RespSet),
 }
+// ------------------------------------------------
+// RespEncode has been implemented by enum_dispatch
+// ------------------------------------------------
 
 impl RespDecode for RespFrame {
     fn decode(buf: &impl AsRef<[u8]>) -> anyhow::Result<Decoded<Self>, DecodeErr> {
@@ -101,7 +104,8 @@ impl RespDecode for RespFrame {
                 let frame = decoded.0.map(|x| x.into());
                 Ok(Decoded(frame, decoded.1))
             }
-            _ => Err(InvalidFrameType("not implemented".to_string())),
+            None => Ok(Decoded(None, 0)),
+            _ => Err(InvalidFrameType("unknown frame type.".to_string())),
         }
     }
 }
@@ -192,6 +196,8 @@ mod tests {
         let frame: RespFrame = RespBulkString::new(b"hello").into();
         assert_eq!(frame.encode()?, b"$5\r\nhello\r\n");
 
+        let frame: RespFrame = RespBulkString::new(b"").into();
+        assert_eq!(frame.encode()?, b"$0\r\n\r\n");
         Ok(())
     }
 

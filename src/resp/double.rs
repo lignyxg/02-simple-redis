@@ -5,7 +5,7 @@ use typed_floats::tf64::NonNaN;
 use crate::resp::frame::{DecodeErr, Decoded, EncodeErr, RespDecode, RespEncode};
 use crate::resp::split_r_n;
 
-#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone)]
 pub struct RespDouble(NonNaN);
 
 impl Deref for RespDouble {

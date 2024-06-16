@@ -1,7 +1,7 @@
 use crate::resp::frame::{DecodeErr, Decoded, EncodeErr, RespDecode, RespEncode};
 use crate::resp::split_r_n;
 
-#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone)]
 pub struct RespNull;
 
 impl RespEncode for RespNull {

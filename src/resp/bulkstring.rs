@@ -4,7 +4,7 @@ use crate::resp::frame::DecodeErr::InvalidLength;
 use crate::resp::frame::{DecodeErr, Decoded, EncodeErr, RespDecode, RespEncode};
 use crate::resp::split_r_n;
 
-#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone)]
 pub struct RespBulkString(Vec<u8>);
 
 impl Deref for RespBulkString {

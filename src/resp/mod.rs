@@ -1,17 +1,17 @@
 use crate::resp::frame::DecodeErr;
 use crate::resp::frame::DecodeErr::{InComplete, InvalidFrame};
 
-mod array;
-mod boolean;
-mod bulkstring;
-mod double;
-mod frame;
-mod integer;
-mod map;
-mod null;
-mod set;
-mod simple_error;
-mod simple_string;
+pub mod array;
+pub mod boolean;
+pub mod bulkstring;
+pub mod double;
+pub mod frame;
+pub mod integer;
+pub mod map;
+pub mod null;
+pub mod set;
+pub mod simple_error;
+pub mod simple_string;
 
 pub fn split_r_n<A>(buf: &A) -> anyhow::Result<(String, String), DecodeErr>
 where

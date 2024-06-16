@@ -1,10 +1,13 @@
 use std::ops::Deref;
 
+use dashmap::DashMap;
+
+use crate::resp::bulkstring::RespBulkString;
 use crate::resp::frame::{DecodeErr, Decoded, EncodeErr, RespDecode, RespEncode, RespFrame};
 use crate::resp::split_r_n;
 
-#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
-pub struct RespArray(Vec<RespFrame>);
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone)]
+pub struct RespArray(pub(crate) Vec<RespFrame>);
 
 impl Deref for RespArray {
     type Target = Vec<RespFrame>;
@@ -16,6 +19,7 @@ impl Deref for RespArray {
 
 // *<number-of-elements>\r\n<element-1>...<element-n>
 // *2\r\n $5\r\nhello\r\n $5\r\nworld\r\n
+// TODO: Null array *-1\r\n
 impl RespEncode for RespArray {
     fn encode(self) -> Result<Vec<u8>, EncodeErr> {
         let n_elements = self.len();
@@ -51,5 +55,20 @@ impl RespDecode for RespArray {
 impl RespArray {
     pub fn new(arr: Vec<RespFrame>) -> Self {
         Self(arr)
+    }
+}
+
+impl TryFrom<DashMap<String, RespFrame>> for RespArray {
+    type Error = anyhow::Error;
+
+    fn try_from(value: DashMap<String, RespFrame>) -> Result<Self, Self::Error> {
+        let mut vec: Vec<RespFrame> = Vec::with_capacity(value.len() * 2);
+
+        for (k, v) in value {
+            let k = RespBulkString::new(k).into();
+            vec.push(k);
+            vec.push(v);
+        }
+        Ok(RespArray::new(vec))
     }
 }

@@ -4,7 +4,7 @@ use std::ops::{Deref, DerefMut};
 use crate::resp::frame::{DecodeErr, Decoded, EncodeErr, RespDecode, RespEncode, RespFrame};
 use crate::resp::split_r_n;
 
-#[derive(Debug, Ord, PartialOrd, Eq, PartialEq)]
+#[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone)]
 pub struct RespSet(BTreeSet<RespFrame>);
 
 impl Deref for RespSet {
@@ -57,5 +57,11 @@ impl RespDecode for RespSet {
 impl RespSet {
     pub fn new() -> Self {
         Self(BTreeSet::new())
+    }
+}
+
+impl Default for RespSet {
+    fn default() -> Self {
+        Self::new()
     }
 }
