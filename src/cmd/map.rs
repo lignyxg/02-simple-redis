@@ -38,6 +38,9 @@ impl TryFrom<RespArray> for GetCommand {
     type Error = ExecuteError;
 
     fn try_from(arr: RespArray) -> Result<Self, Self::Error> {
+        let Some(arr) = arr.0 else {
+            return Err(InvalidCommand("command exists".to_string()));
+        };
         if arr.len() != 2 {
             return Err(InvalidArgument(format!(
                 "expected 1, got {}",
@@ -46,7 +49,7 @@ impl TryFrom<RespArray> for GetCommand {
         }
         match &arr[1] {
             RespFrame::BulkString(key) => {
-                let key = String::from_utf8(key.to_vec())?;
+                let key = String::from_utf8(key.as_ref().expect("key has to exist").to_vec())?;
                 Ok(GetCommand { key })
             }
             _ => Err(InvalidCommand("get key should be a bulkstring".to_string())),
@@ -58,6 +61,9 @@ impl TryFrom<RespArray> for SetCommand {
     type Error = ExecuteError;
 
     fn try_from(arr: RespArray) -> Result<Self, Self::Error> {
+        let Some(arr) = arr.0 else {
+            return Err(InvalidCommand("command exists".to_string()));
+        };
         if arr.len() != 3 {
             return Err(InvalidArgument(format!(
                 "expected 2, got {}",
@@ -67,7 +73,7 @@ impl TryFrom<RespArray> for SetCommand {
         let mut args = into_args_iter(arr, 1);
         match (args.next(), args.next()) {
             (Some(RespFrame::BulkString(key)), Some(frame)) => {
-                let key = String::from_utf8(key.to_vec())?;
+                let key = String::from_utf8(key.as_ref().expect("key has to exist").to_vec())?;
                 Ok(SetCommand { key, value: frame })
             }
             _ => Err(InvalidCommand("set key should be a bulkstring".to_string())),

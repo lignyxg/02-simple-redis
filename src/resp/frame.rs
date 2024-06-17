@@ -360,4 +360,37 @@ mod tests {
         assert_eq!(decoded.0.unwrap(), set);
         Ok(())
     }
+
+    #[test]
+    fn test_null_bulkstring_encode() -> anyhow::Result<()> {
+        let null = RespBulkString::null();
+        let encoded = RespFrame::encode(null.into())?;
+        assert_eq!(encoded, b"$-1\r\n");
+        Ok(())
+    }
+    #[test]
+    fn test_null_bulkstring_decode() -> anyhow::Result<()> {
+        let encoded = b"$-1\r\n";
+        let decoded = RespFrame::decode(&encoded)?;
+        assert_eq!(encoded.len(), decoded.1);
+        assert_eq!(decoded.0.unwrap(), RespBulkString::null().into());
+        Ok(())
+    }
+
+    #[test]
+    fn test_null_array_encode() -> anyhow::Result<()> {
+        let null = RespArray::null();
+        let encoded = RespFrame::encode(null.into())?;
+        assert_eq!(encoded, b"*-1\r\n");
+        Ok(())
+    }
+
+    #[test]
+    fn test_null_array_decode() -> anyhow::Result<()> {
+        let encoded = b"*-1\r\n";
+        let decoded = RespFrame::decode(&encoded)?;
+        assert_eq!(encoded.len(), decoded.1);
+        assert_eq!(decoded.0.unwrap(), RespArray::null().into());
+        Ok(())
+    }
 }

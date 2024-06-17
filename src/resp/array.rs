@@ -7,10 +7,10 @@ use crate::resp::frame::{DecodeErr, Decoded, EncodeErr, RespDecode, RespEncode, 
 use crate::resp::split_r_n;
 
 #[derive(Debug, Ord, PartialOrd, Eq, PartialEq, Clone)]
-pub struct RespArray(pub(crate) Vec<RespFrame>);
+pub struct RespArray(pub(crate) Option<Vec<RespFrame>>);
 
 impl Deref for RespArray {
-    type Target = Vec<RespFrame>;
+    type Target = Option<Vec<RespFrame>>;
 
     fn deref(&self) -> &Self::Target {
         &self.0
@@ -22,10 +22,13 @@ impl Deref for RespArray {
 // TODO: Null array *-1\r\n
 impl RespEncode for RespArray {
     fn encode(self) -> Result<Vec<u8>, EncodeErr> {
-        let n_elements = self.len();
+        let Some(arr) = self.0 else {
+            return Ok(Vec::from(b"*-1\r\n"));
+        };
+        let n_elements = arr.len();
         let mut ret = Vec::with_capacity(4096);
         ret.extend_from_slice(&format!("*{}\r\n", n_elements).into_bytes());
-        for elem in self.0 {
+        for elem in arr {
             let encoded = elem.encode()?;
             ret.extend_from_slice(&encoded);
         }
@@ -36,9 +39,13 @@ impl RespEncode for RespArray {
 impl RespDecode for RespArray {
     fn decode(buf: &impl AsRef<[u8]>) -> anyhow::Result<Decoded<Self>, DecodeErr> {
         let (pre, rest) = split_r_n(buf)?;
+        let mut total_length = pre.len() + 2;
+        if rest.is_empty() && pre[1..].parse::<i64>()? == -1 {
+            return Ok(Decoded(Some(RespArray::null()), total_length));
+        }
+
         let n_elem = pre[1..].parse::<usize>()?; // num of elements in array
         let mut ret = Vec::new();
-        let mut total_length = pre.len() + 2;
 
         let mut remainder = rest;
         for _ in 0..n_elem {
@@ -54,7 +61,11 @@ impl RespDecode for RespArray {
 
 impl RespArray {
     pub fn new(arr: Vec<RespFrame>) -> Self {
-        Self(arr)
+        Self(Some(arr))
+    }
+
+    pub fn null() -> Self {
+        Self(None)
     }
 }
 

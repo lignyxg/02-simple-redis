@@ -6,7 +6,6 @@ use thiserror::Error;
 use crate::backend::Backend;
 use crate::cmd::hmap::{HGetAllCommand, HGetCommand, HSetCommand};
 use crate::cmd::map::{GetCommand, SetCommand};
-use crate::resp::array::RespArray;
 use crate::resp::frame::{DecodeErr, RespFrame};
 use crate::resp::simple_string::RespSimpleString;
 
@@ -42,6 +41,6 @@ pub enum ExecuteError {
     FromUtf8Error(#[from] FromUtf8Error),
 }
 
-pub fn into_args_iter(val: RespArray, start: usize) -> impl Iterator<Item = RespFrame> {
-    val.0.into_iter().skip(start)
+pub fn into_args_iter(val: Vec<RespFrame>, start: usize) -> impl Iterator<Item = RespFrame> {
+    val.into_iter().skip(start)
 }

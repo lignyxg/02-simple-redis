@@ -52,12 +52,18 @@ async fn request_handler(req: RedisRequest) -> anyhow::Result<RedisResponse> {
     let (frame, backend) = (req.frame, req.backend);
 
     let RespFrame::Array(cmd) = frame else {
-        bail!("Invalid command format.")
+        bail!("Invalid command format.");
     };
 
-    let RespFrame::BulkString(s) = &cmd[0] else {
-        bail!("Invalid command format.")
+    let Some(content) = &cmd.0 else {
+        bail!("Invalid command format.");
     };
+
+    let RespFrame::BulkString(s) = &content[0] else {
+        bail!("Invalid command format.");
+    };
+
+    let s = s.as_ref().expect("command name must exist.");
 
     let response = match s.to_ascii_lowercase().as_slice() {
         b"get" => {
@@ -86,7 +92,10 @@ async fn request_handler(req: RedisRequest) -> anyhow::Result<RedisResponse> {
             hgetall.execute(backend)?
         }
         _ => {
-            let s = format!("unimplemented command: {}", String::from_utf8(s.to_vec())?);
+            let s = format!(
+                "unimplemented command: {}",
+                String::from_utf8_lossy(s.as_slice())
+            );
             info!(s);
             RespSimpleString::new(s).into()
         }

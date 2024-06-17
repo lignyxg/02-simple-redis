@@ -59,6 +59,9 @@ impl TryFrom<RespArray> for HGetCommand {
     type Error = ExecuteError;
 
     fn try_from(arr: RespArray) -> Result<Self, Self::Error> {
+        let Some(arr) = arr.0 else {
+            return Err(InvalidCommand("command exists".to_string()));
+        };
         let len = arr.len();
         if len != 3 {
             return Err(InvalidArgument(format!("expected 2, got {}", len - 1)));
@@ -66,8 +69,9 @@ impl TryFrom<RespArray> for HGetCommand {
         let mut args = into_args_iter(arr, 1);
         match (args.next(), args.next()) {
             (Some(RespFrame::BulkString(field)), Some(RespFrame::BulkString(key))) => {
-                let field = String::from_utf8(field.to_vec())?;
-                let key = String::from_utf8(key.to_vec())?;
+                let field =
+                    String::from_utf8(field.as_ref().expect("field has to exist").to_vec())?;
+                let key = String::from_utf8(key.as_ref().expect("key has to exist").to_vec())?;
                 Ok(HGetCommand { field, key })
             }
             _ => Err(InvalidCommand(
@@ -81,6 +85,10 @@ impl TryFrom<RespArray> for HSetCommand {
     type Error = ExecuteError;
 
     fn try_from(arr: RespArray) -> Result<Self, Self::Error> {
+        let Some(arr) = arr.0 else {
+            return Err(InvalidCommand("command exists".to_string()));
+        };
+
         let len = arr.len();
         if len != 4 {
             return Err(InvalidArgument(format!("expected 2, got {}", len - 1)));
@@ -88,12 +96,13 @@ impl TryFrom<RespArray> for HSetCommand {
         let mut args = into_args_iter(arr, 1);
         match (args.next(), args.next(), args.next()) {
             (Some(RespFrame::BulkString(field)), Some(RespFrame::BulkString(key)), Some(frame)) => {
-                let field = String::from_utf8(field.to_vec())?;
-                let key = String::from_utf8(key.to_vec())?;
+                let field =
+                    String::from_utf8(field.as_ref().expect("field has to exist").to_vec())?;
+                let key = String::from_utf8(key.as_ref().expect("key has to exist").to_vec())?;
                 Ok(HSetCommand {
                     field,
                     key,
-                    value: frame,
+                    value: frame.clone(),
                 })
             }
             _ => Err(InvalidCommand(
@@ -107,6 +116,9 @@ impl TryFrom<RespArray> for HGetAllCommand {
     type Error = ExecuteError;
 
     fn try_from(arr: RespArray) -> Result<Self, Self::Error> {
+        let Some(arr) = arr.0 else {
+            return Err(InvalidCommand("command exists".to_string()));
+        };
         if arr.len() != 2 {
             return Err(InvalidArgument(format!(
                 "expected 1, got {}",
@@ -115,7 +127,8 @@ impl TryFrom<RespArray> for HGetAllCommand {
         }
         match &arr[1] {
             RespFrame::BulkString(field) => {
-                let field = String::from_utf8(field.to_vec())?;
+                let field =
+                    String::from_utf8(field.as_ref().expect("field has to exist").to_vec())?;
                 Ok(HGetAllCommand { field })
             }
             _ => Err(InvalidCommand("get key should be a bulkstring".to_string())),
