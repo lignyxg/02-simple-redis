@@ -26,7 +26,7 @@ impl RespBulkString {
 }
 
 // $5\r\nhello\r\n
-// TODO: Null bulk strings: $-1\r\n
+// Null bulk strings: $-1\r\n
 impl RespEncode for RespBulkString {
     fn encode(self) -> Result<Vec<u8>, EncodeErr> {
         let Some(bulk_string) = self.0 else {

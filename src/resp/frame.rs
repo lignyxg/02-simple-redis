@@ -169,7 +169,7 @@ mod tests {
     #[test]
     fn test_integer_encode() -> anyhow::Result<()> {
         let frame: RespFrame = 123.into();
-        assert_eq!(frame.encode()?, b":+123\r\n");
+        assert_eq!(frame.encode()?, b":123\r\n");
 
         let frame: RespFrame = (-123).into();
         assert_eq!(frame.encode()?, b":-123\r\n");

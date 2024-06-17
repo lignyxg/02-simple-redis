@@ -6,8 +6,10 @@ use tokio_util::codec::Framed;
 use tracing::info;
 
 use crate::backend::Backend;
-use crate::cmd::hmap::{HGetAllCommand, HGetCommand, HSetCommand};
+use crate::cmd::echo::ECHOCommand;
+use crate::cmd::hmap::{HGetAllCommand, HGetCommand, HSetCommand, HmgetCommand};
 use crate::cmd::map::{GetCommand, SetCommand};
+use crate::cmd::set::{SaddCommand, SismemberCommand};
 use crate::cmd::CommandExecutor;
 use crate::network::codec::RespCodec;
 use crate::resp::frame::RespFrame;
@@ -90,6 +92,26 @@ async fn request_handler(req: RedisRequest) -> anyhow::Result<RedisResponse> {
             info!("hgetall command");
             let hgetall = HGetAllCommand::try_from(cmd)?;
             hgetall.execute(backend)?
+        }
+        b"echo" => {
+            info!("echo command");
+            let echo = ECHOCommand::try_from(cmd)?;
+            echo.execute(backend)?
+        }
+        b"hmget" => {
+            info!("hmget command");
+            let echo = HmgetCommand::try_from(cmd)?;
+            echo.execute(backend)?
+        }
+        b"sadd" => {
+            info!("sadd command");
+            let sadd = SaddCommand::try_from(cmd)?;
+            sadd.execute(backend)?
+        }
+        b"sismember" => {
+            info!("sismember command");
+            let sismember = SismemberCommand::try_from(cmd)?;
+            sismember.execute(backend)?
         }
         _ => {
             let s = format!(

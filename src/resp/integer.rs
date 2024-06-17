@@ -4,8 +4,7 @@ use crate::resp::split_r_n;
 // :[<+|->]<value>\r\n
 impl RespEncode for i64 {
     fn encode(self) -> Result<Vec<u8>, EncodeErr> {
-        let sign = if self > 0 { "+" } else { "" };
-        Ok(format!(":{}{}\r\n", sign, self).into_bytes())
+        Ok(format!(":{}\r\n", self).into_bytes())
     }
 }
 

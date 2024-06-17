@@ -19,7 +19,7 @@ impl Deref for RespArray {
 
 // *<number-of-elements>\r\n<element-1>...<element-n>
 // *2\r\n $5\r\nhello\r\n $5\r\nworld\r\n
-// TODO: Null array *-1\r\n
+// Null array *-1\r\n
 impl RespEncode for RespArray {
     fn encode(self) -> Result<Vec<u8>, EncodeErr> {
         let Some(arr) = self.0 else {
@@ -60,8 +60,8 @@ impl RespDecode for RespArray {
 }
 
 impl RespArray {
-    pub fn new(arr: Vec<RespFrame>) -> Self {
-        Self(Some(arr))
+    pub fn new(arr: impl Into<Vec<RespFrame>>) -> Self {
+        Self(Some(arr.into()))
     }
 
     pub fn null() -> Self {
